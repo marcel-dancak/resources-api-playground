@@ -4,7 +4,9 @@ import { invalidator } from '@/service'
 export default {
   props: {
     url: String,
-    params: Object
+    params: Object,
+    initial: {},
+    transform: Function
   },
   data () {
     return {
@@ -23,9 +25,15 @@ export default {
       handler: 'fetch'
     }
   },
+  created () {
+    if (this.initial !== undefined) {
+      this.data = this.initial
+      this.$emit('update', this.data)
+    }
+  },
   mounted () {
     this.fetch()
-    // will work for static url only!
+    // will work for initial url only!
     const unwatch = this.$watch(() => this.invalidator[this.url], this.fetch)
     this.$once('hook:beforeDestroy', unwatch)
   },
@@ -34,7 +42,7 @@ export default {
       this.fetching = true
       this.$service.get(this.url, this.params)
         .then(data => {
-          this.data = data
+          this.data = this.transform ? this.transform(data) : data
           this.$emit('update', this.data)
         })
         .catch(err => {

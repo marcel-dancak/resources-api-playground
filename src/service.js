@@ -3,8 +3,13 @@ import Vue from 'vue'
 
 const service = {
   get (url, params) {
+    if (params) {
+      const qs = Object.entries(params).map(([name, value]) => `${name}=${encodeURIComponent(value)}`).join('&')
+      url = url + '?' + qs
+    }
+
     return new Promise(resolve => {
-      setTimeout(() => resolve(new Date().toISOString()), 1000)
+      setTimeout(() => resolve({ url, time: new Date().toLocaleTimeString() }), 1000)
     })
   }
 }
@@ -21,10 +26,6 @@ const store = {}
  */
 export function resourceData (url, { params, initial, transform, onError } = {}) {
   const key = `${this._uid}:${url}`
-  if (params) {
-    const qs = Object.entries(params).map(([name, value]) => `${name}=${encodeURIComponent(value)}`).join('&')
-    url = url + '?' + qs
-  }
   let obj = store[key]
   if (!obj) {
     obj = Vue.observable({
